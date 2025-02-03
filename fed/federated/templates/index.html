@@ -1,0 +1,177 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Federated Learning Platform</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        main {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #4CAF50;
+        }
+        pre {
+            background-color: #f4f4f9;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Welcome to the Federated Learning Platform</h1>
+    </header>
+    <main>
+        <!-- Explanation of Federated Learning -->
+        <section>
+            <h2>What is Federated Learning?</h2>
+            <p>Federated learning is a machine learning technique that trains models across multiple decentralized devices or servers holding local data samples, without exchanging their data. This approach helps enhance privacy, scalability, and compliance with regulations such as GDPR.</p>
+            <p>For example, federated learning can be used in healthcare to train models on patient data distributed across hospitals, ensuring that sensitive data never leaves its source.</p>
+            <div style="text-align: center; margin-top: 20px;">
+                <img src="{% static 'federated/img.png' %}" alt="Federated Learning Concept" width="600" style="border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            </div>
+        </section>
+
+        <!-- Example Code Section -->
+        <section>
+            <h2>Example Code</h2>
+            <p>Below is a Python example of federated learning code. You can copy it and run it locally to explore its functionality.</p>
+            <pre id="codeBlock">
+import requests
+import pickle
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn.model_selection import train_test_split, GridSearchCV
+
+# Step 1: Download the global model
+model_url = "http://127.0.0.1:8000/media/global_model.pkl"  # Replace with your server URL
+response = requests.get(model_url)
+
+if response.status_code == 200:
+    with open("global_model.pkl", "wb") as f:
+        f.write(response.content)
+    print("Global model downloaded successfully.")
+else:
+    print(f"Failed to download the model. Status code: {response.status_code}")
+    exit()
+
+# Step 2: Load the global model
+try:
+    with open("global_model.pkl", "rb") as f:
+        global_model = pickle.load(f)
+    print("Global model loaded successfully.")
+except Exception as e:
+    print("Error loading global model:", e)
+    exit()
+
+# Step 3: Load local dataset
+data_path = "your_local_dataset.csv"  # Replace with your dataset file name
+try:
+    data = pd.read_csv(data_path)
+except FileNotFoundError:
+    print(f"Dataset not found at {data_path}. Ensure the file exists and is in the correct format.")
+    exit()
+
+if 'Target' not in data.columns:  # Replace 'Target' with your dataset's target column name
+    print("The dataset must contain a column named 'Target'.")
+    exit()
+
+X = data.drop('Target', axis=1)
+y = data['Target']
+
+# Step 4: Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 5: Perform Grid Search for Hyperparameter Tuning
+param_grid = {
+    'max_depth': [3, 5, 10, None],
+    'min_samples_split': [2, 5, 10],
+    'criterion': ['gini', 'entropy']
+}
+grid_search = GridSearchCV(DecisionTreeClassifier(random_state=42), param_grid, scoring='accuracy', cv=3)
+grid_search.fit(X_train, y_train)
+
+# Use the best model from Grid Search
+best_model = grid_search.best_estimator_
+print(f"Best Parameters: {grid_search.best_params_}")
+
+# Step 6: Evaluate the best model
+y_pred = best_model.predict(X_test)
+accuracy = accuracy_score(y_test, y_pred)
+print(f"Best Accuracy on local test data: {accuracy * 100:.2f}%")
+print("Classification Report:\n", classification_report(y_test, y_pred))
+
+# Step 7: Submit the best parameters and accuracy
+submission_url = "http://127.0.0.1:8000/submit/"  # Replace with your submission endpoint
+payload = {
+    "accuracy": accuracy * 100,
+    "parameters": best_model.get_params()
+}
+
+response = requests.post(submission_url, json=payload)
+if response.status_code == 200:
+    print("Results submitted successfully:", response.json())
+else:
+    print("Failed to submit results:", response.status_code, response.text)
+
+            </pre>
+            <button onclick="copyCode()">Copy Code</button>
+        </section>
+
+        <!-- Navigation Button -->
+        <a href="/dashboard/">
+            <button>Go to Dashboard</button>
+        </a>
+    </main>
+
+    <script>
+        // Function to copy code to clipboard
+        function copyCode() {
+            const codeBlock = document.getElementById("codeBlock").innerText;
+            navigator.clipboard.writeText(codeBlock)
+                .then(() => alert("Code copied to clipboard!"))
+                .catch(() => alert("Failed to copy code."));
+        }
+    </script>
+</body>
+</html>

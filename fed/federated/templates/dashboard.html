@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Federated Learning Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        main {
+            margin: 20px auto;
+            padding: 20px;
+            max-width: 800px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #4CAF50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: inherit;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Federated Learning Dashboard</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Model Versions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Version</th>
+                        <th>Created At</th>
+                        <th>Global Model Path</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for model_version in model_versions %}
+                        <tr>
+                            <td>{{ model_version.version_number }}</td>
+                            <td>{{ model_version.created_at }}</td>
+                            <td>{{ model_version.global_model_path }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+
+        <section>
+            <h2>Client Submissions</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Model Version</th>
+                        <th>Submitted At</th>
+                        <th>Accuracy</th>
+                        <th>Parameters</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for submission in submissions %}
+                        <tr>
+                            <td>{{ submission.model_version.version_number }}</td>
+                            <td>{{ submission.submitted_at }}</td>
+                            <td>{{ submission.performance_metric }}</td>
+                            <td>
+                                <pre>{{ submission.parameters|safe|default:"{}" }}</pre>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>
